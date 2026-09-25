@@ -19,6 +19,8 @@ const game = new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
+  // по умолчанию Phaser ловит одно касание; нужно три: джойстик + прыжок + рывок
+  input: { activePointers: 3 },
   physics: {
     default: 'arcade',
     // гравитация задаётся каждому телу отдельно — так проще крутить в tuning.ts
