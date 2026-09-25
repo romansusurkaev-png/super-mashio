@@ -1,0 +1,53 @@
+{
+  "frameWidth": 340,
+  "frameHeight": 460,
+  "origin": {
+    "x": 0.5,
+    "y": 0.87
+  },
+  "figureHeight": 340,
+  "floorY": 400.2,
+  "pelvisY": 229.9,
+  "frames": {
+    "idle": {
+      "source": "01.png",
+      "alignBy": "floor",
+      "pelvisOnCanvas": [
+        170.0,
+        229.9
+      ],
+      "footOnCanvas": 400.2,
+      "scale": 0.5934
+    },
+    "step1": {
+      "source": "02.png",
+      "alignBy": "floor",
+      "pelvisOnCanvas": [
+        170.0,
+        235.5
+      ],
+      "footOnCanvas": 400.2,
+      "scale": 0.5934
+    },
+    "step2": {
+      "source": "03.png",
+      "alignBy": "floor",
+      "pelvisOnCanvas": [
+        170.0,
+        234.1
+      ],
+      "footOnCanvas": 400.2,
+      "scale": 0.5934
+    },
+    "jump": {
+      "source": "04.png",
+      "alignBy": "pelvis",
+      "pelvisOnCanvas": [
+        170.0,
+        229.9
+      ],
+      "footOnCanvas": 424.2,
+      "scale": 0.5934
+    }
+  }
+}

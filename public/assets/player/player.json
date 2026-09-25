@@ -1,0 +1,98 @@
+{
+  "frames": [
+    {
+      "filename": "idle",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 460
+      }
+    },
+    {
+      "filename": "step1",
+      "frame": {
+        "x": 340,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 460
+      }
+    },
+    {
+      "filename": "step2",
+      "frame": {
+        "x": 680,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 460
+      }
+    },
+    {
+      "filename": "jump",
+      "frame": {
+        "x": 1020,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 460
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 460
+      }
+    }
+  ],
+  "meta": {
+    "app": "prepare-photos",
+    "image": "player.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1360,
+      "h": 460
+    },
+    "scale": "1"
+  }
+}

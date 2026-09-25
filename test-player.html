@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SUPER MASHIO — отладка кадров игрока</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #15141d;
+      --panel: #1e1d2a;
+      --line: #2e2c40;
+      --text: #e8e6f2;
+      --muted: #9a96b5;
+      --accent: #ffcf5c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: Nunito, system-ui, sans-serif;
+      display: flex; min-height: 100vh; gap: 18px; padding: 18px;
+    }
+    #game { flex: 1 1 auto; display: flex; align-items: flex-start; justify-content: center; }
+    #game canvas { border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+
+    aside {
+      width: 320px; flex: 0 0 320px; background: var(--panel);
+      border: 1px solid var(--line); border-radius: 14px; padding: 16px;
+      max-height: calc(100vh - 36px); overflow-y: auto;
+    }
+    h1 { font-size: 17px; margin: 0 0 4px; }
+    h2 { font-size: 13px; margin: 18px 0 8px; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+    p.hint { margin: 0 0 6px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+
+    .row { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+    .row-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    label { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin: 3px 0; }
+    label span { width: 34px; text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }
+    input[type=range] { flex: 1; accent-color: var(--accent); }
+    input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
+    select { background: #262436; color: var(--text); border: 1px solid var(--line); border-radius: 7px; padding: 4px 6px; }
+
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
+    button {
+      width: 100%; margin-top: 8px; padding: 9px; border-radius: 9px; cursor: pointer;
+      background: var(--accent); color: #20202e; border: 0; font-weight: 700; font-family: inherit;
+    }
+    button.ghost { background: #2a2839; color: var(--text); }
+    textarea {
+      width: 100%; height: 130px; margin-top: 8px; background: #14131c; color: #cfe6b8;
+      border: 1px solid var(--line); border-radius: 9px; padding: 8px;
+      font-family: ui-monospace, Consolas, monospace; font-size: 11px;
+    }
+    kbd {
+      background: #2a2839; border: 1px solid var(--line); border-bottom-width: 2px;
+      border-radius: 5px; padding: 1px 5px; font-size: 11px; font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+
+  <aside>
+    <h1>Отладка кадров</h1>
+    <p class="hint">
+      <kbd>←</kbd><kbd>→</kbd> или <kbd>A</kbd><kbd>D</kbd> — бег,
+      <kbd>Space</kbd> — прыжок (двойной),
+      <kbd>Shift</kbd> — рывок.
+    </p>
+
+    <h2>Подвижка кадров</h2>
+    <p class="hint">Пиксели исходного кадра. Гоняй персонажа и лови момент, где фигура прыгает при смене кадра.</p>
+    <div id="nudges"></div>
+
+    <h2>Что показывать</h2>
+    <div class="checks">
+      <label><input type="checkbox" id="t-hitbox" checked> хитбокс</label>
+      <label><input type="checkbox" id="t-shadow" checked> тень</label>
+      <label><input type="checkbox" id="t-grid" checked> сетка</label>
+      <label><input type="checkbox" id="t-onion"> луковица</label>
+      <label><input type="checkbox" id="t-auto"> сам ходит</label>
+    </div>
+
+    <h2>Настройки</h2>
+    <label>масштаб <input type="range" id="scale" min="0.15" max="0.8" step="0.01" value="0.34"><span id="scale-val">0.34</span></label>
+    <label>скорость <input type="range" id="speed" min="60" max="420" step="10" value="200"><span id="speed-val">200</span></label>
+    <label>макс. fps <input type="range" id="fpsmax" min="6" max="24" step="1" value="14"><span id="fpsmax-val">14</span></label>
+    <label>фон
+      <select id="bg">
+        <option value="#20202e">тёмный</option>
+        <option value="#e9e4d8">светлый</option>
+        <option value="#3b4c7a">двор (сумерки)</option>
+        <option value="#f5e0c3">кухня</option>
+        <option value="#ff9e6d">крыши (закат)</option>
+      </select>
+    </label>
+
+    <button class="ghost" id="reset">Поставить на место</button>
+    <button id="export">Собрать offsets для photo-config.json</button>
+    <textarea id="export-out" placeholder="Здесь появится готовый кусок конфига"></textarea>
+  </aside>
+
+  <script type="module" src="/src/testPlayer.ts"></script>
+</body>
+</html>

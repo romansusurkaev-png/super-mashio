@@ -1,0 +1,20 @@
+# зависимости и сборка
+node_modules/
+dist/
+.vite/
+
+# phaser.min.js кладётся сюда скриптом `npm run vendor`, в репозитории не нужен
+public/vendor/
+
+# локальные настройки инструментов (в launch.json машинно-зависимые пути)
+.claude/
+
+# мусор системы
+.DS_Store
+Thumbs.db
+desktop.ini
+*.local
+
+# python
+__pycache__/
+*.pyc

@@ -1,0 +1,48 @@
+{
+  "_комментарий": "Всё, что нужно крутить руками при отладке кадров, лежит здесь. После правки — npm run photos",
+
+  "sourceDir": "photos",
+  "outDir": "public/assets/player",
+
+  "canvas": {
+    "width": 340,
+    "height": 460
+  },
+
+  "anchor": {
+    "x": 0.5,
+    "floorY": 0.87
+  },
+
+  "figureHeight": 340,
+  "scaleRefFrame": "idle",
+
+  "pelvisBand": [0.42, 0.58],
+
+  "frames": [
+    { "name": "idle",  "file": "01.png", "alignBy": "floor",  "scale": 1.0, "offsetX": 0, "offsetY": 0 },
+    { "name": "step1", "file": "02.png", "alignBy": "floor",  "scale": 1.0, "offsetX": 0, "offsetY": 0 },
+    { "name": "step2", "file": "03.png", "alignBy": "floor",  "scale": 1.0, "offsetX": 0, "offsetY": 0 },
+    { "name": "jump",  "file": "04.png", "alignBy": "pelvis", "scale": 1.0, "offsetX": 0, "offsetY": 0 }
+  ],
+
+  "key": {
+    "whiteThreshold": 224,
+    "chromaTolerance": 20,
+    "shrink": 1,
+    "feather": 0.9,
+    "holeMinArea": 30
+  },
+
+  "style": {
+    "saturation": 1.15,
+    "brightness": 1.03,
+    "contrast": 1.06,
+    "shadowLift": 0.1,
+    "posterizeBits": 5,
+    "outlineWidth": 2.5,
+    "outlineColor": "#241C2E",
+    "outlineAlpha": 0.55,
+    "outlineSoftness": 0.8
+  }
+}
