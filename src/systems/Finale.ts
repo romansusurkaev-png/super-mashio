@@ -11,7 +11,7 @@ import type { Palette } from '../config/palettes';
 import { Cat } from '../entities/Cat';
 import type { Player } from '../entities/Player';
 import { audio } from './AudioManager';
-import type { Fx } from './Fx';
+import { POUR_GRAVITY, type Fx } from './Fx';
 
 export interface FinaleParts {
   scene: Phaser.Scene;
@@ -64,18 +64,30 @@ export class Finale {
     scene.tweens.add({ targets: player, extraTilt: 0, duration: 400 });
 
     // --- игрок подходит к миске и высыпает корм
-    await this.movePlayerTo(bowl.x - 90);
+    await this.movePlayerTo(bowl.x - 58);
     scene.tweens.add({ targets: player, extraTilt: -10, duration: 400, ease: 'Sine.easeOut' });
     cat.setFacing(-1);
 
     const total = this.p.getScore();
     const pourMs = Phaser.Math.Clamp(total * 22, 900, 2600);
-    fx.pourFood(bowl.x - 10, bowl.y - 120, pourMs);
+
+    // Геометрию берём у самой картинки миски, а не числами на глаз:
+    // кромка у неё на трети высоты сверху, внутренний круг — 62% ширины.
+    const rimY = bowl.y - bowl.displayHeight * 0.66;
+    const foodW = bowl.displayWidth * 0.62;   // внутренний круг миски, куда ложится корм
+    const fall = 120;
+    const fallMs = Math.sqrt((2 * fall) / POUR_GRAVITY) * 1000;
+
+    // сыплем почти из рук игрока, иначе корм льётся из воздуха
+    fx.pourFood(bowl.x - 22, rimY - fall, pourMs, fallMs, bowl.depth - 1);
     audio.pour();
 
-    // горка корма растёт в миске, счётчик утекает в ноль
-    this.pile = scene.add.ellipse(bowl.x, bowl.y - 46, 74, 22, 0xc07c42)
-      .setDepth(7).setScale(0, 0);
+    // Горка корма растёт внутри миски, счётчик утекает в ноль.
+    // Рисуем поверх миски и ровно по её внутреннему кругу, иначе корм висит в воздухе.
+    // Глубина строго между миской и кошкой: выше миски, иначе корма не видно,
+    // но ниже кошки, иначе горка ляжет поверх морды, когда та ест.
+    this.pile = scene.add.ellipse(bowl.x, rimY - 4, foodW, foodW * 0.3, 0xc07c42)
+      .setDepth((bowl.depth + cat.root.depth) / 2).setScale(0, 0);
     scene.tweens.add({ targets: this.pile, scaleX: 1, scaleY: 1, duration: pourMs, ease: 'Sine.easeOut' });
     scene.tweens.addCounter({
       from: total,
@@ -87,7 +99,9 @@ export class Finale {
     scene.tweens.add({ targets: player, extraTilt: -4, duration: 400 });
 
     // --- кошка ест
-    cat.runTo(bowl.x - 40, 220);
+    // встаёт сбоку от миски и тянется к ней мордой: если встать прямо над кормом,
+    // голова закроет его целиком
+    cat.runTo(bowl.x - 50, 220);
     await this.wait(700);
     cat.setFacing(1);
     cat.startEating();

@@ -1,6 +1,11 @@
 /** Палитры уровней. Один уровень — один набор цветов, отсюда красится всё: фон, земля, частицы, HUD. */
 
+/** Набор рисовалок фона и декора. Уровень выбирает тему через палитру. */
+export type Theme = 'yard' | 'kitchen' | 'roofs';
+
 export interface Palette {
+  /** какими рисовалками собирать фон и декор */
+  theme: Theme;
   /** небо: цвет сверху и снизу */
   sky: [number, number];
   /** свет на горизонте (закат/лампа) */
@@ -26,6 +31,7 @@ export interface Palette {
 export const PALETTES: Record<string, Palette> = {
   /** Двор, летние сумерки */
   yard: {
+    theme: 'yard',
     sky: [0x2c3a63, 0xf2a25c],
     glow: 0xffb877,
     far: 0x364473,
@@ -42,6 +48,7 @@ export const PALETTES: Record<string, Palette> = {
 
   /** Кухня, тёплый вечер */
   kitchen: {
+    theme: 'kitchen',
     sky: [0xf5e0c3, 0xe0b489],
     glow: 0xffb870,
     far: 0xd9b48c,
@@ -58,6 +65,7 @@ export const PALETTES: Record<string, Palette> = {
 
   /** Крыши, закат */
   roofs: {
+    theme: 'roofs',
     sky: [0x6b4b8a, 0xff9e6d],
     glow: 0xffd39b,
     far: 0x8a6a9e,

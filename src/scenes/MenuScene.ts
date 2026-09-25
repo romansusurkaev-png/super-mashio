@@ -2,7 +2,7 @@
 
 import Phaser from 'phaser';
 import { getPalette } from '../config/palettes';
-import { LEVELS, LEVEL_CARDS } from '../levels';
+import { LEVELS, LEVEL_CARDS, UNLOCK_ALL_LEVELS } from '../levels';
 import { audio } from '../systems/AudioManager';
 import { Fx } from '../systems/Fx';
 import { Save } from '../systems/Save';
@@ -48,7 +48,8 @@ export class MenuScene extends Phaser.Scene {
 
     const save = Save.all();
     for (const [i, card] of LEVEL_CARDS.entries()) {
-      this.levelCard(this.scale.width / 2 + (i - 1) * 300, 420, card, save.unlocked >= card.id);
+      this.levelCard(this.scale.width / 2 + (i - 1) * 300, 420, card,
+        UNLOCK_ALL_LEVELS || save.unlocked >= card.id);
     }
 
     this.add.text(this.scale.width / 2, VIEW_H - 46,

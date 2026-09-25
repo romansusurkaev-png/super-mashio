@@ -93,6 +93,7 @@ export class GameScene extends Phaser.Scene {
 
     this.buildPickups();
     this.buildHazards();
+    this.warnAboutUnreachablePickups();
 
     // --- камера: мягкое следование с мёртвой зоной и заглядыванием вперёд
     const cam = this.cameras.main;
@@ -162,12 +163,13 @@ export class GameScene extends Phaser.Scene {
       g.fillRoundedRect(plat.x, plat.y, plat.w, plat.h, 14);
 
       if (plat.grass !== false) {
-        // кромка травы: волна сверху
         g.fillStyle(p.groundTop, 1);
         g.fillRoundedRect(plat.x, plat.y, plat.w, 22, 11);
-        g.fillStyle(p.groundTop, 1);
-        for (let x = plat.x + 8; x < plat.x + plat.w - 8; x += 18) {
-          g.fillCircle(x, plat.y + 4, 9);
+        // во дворе сверху трава волной, в помещении — ровная кромка столешницы
+        if (p.theme === 'yard') {
+          for (let x = plat.x + 8; x < plat.x + plat.w - 8; x += 18) {
+            g.fillCircle(x, plat.y + 4, 9);
+          }
         }
         g.fillStyle(p.groundEdge, 1);
         g.fillRect(plat.x, plat.y + 22, plat.w, 3);
@@ -181,10 +183,9 @@ export class GameScene extends Phaser.Scene {
       const image = this.add.image(item.x, item.y + 6, `${prefix}-${item.kind}`)
         .setOrigin(0.5, 1)
         .setScale(item.scale ?? 1)
-        .setDepth(item.kind === 'tree' || item.kind === 'lamp' ? 0 : 2);
-      if (item.kind === 'lamp') image.setDepth(0);
-      // лёгкое покачивание зелени
-      if (item.kind === 'bush' || item.kind === 'tree' || item.kind === 'flowers') {
+        .setDepth(item.back ? 0 : 2);
+      // лёгкое покачивание — помечается флагом в JSON уровня
+      if (item.sway) {
         this.tweens.add({
           targets: image,
           angle: { from: -1.2, to: 1.2 },
@@ -195,6 +196,27 @@ export class GameScene extends Phaser.Scene {
         });
       }
     }
+  }
+
+  /**
+   * Финал стартует раньше самой миски, и корм, лежащий за этой чертой, собрать уже нельзя.
+   * Проверка ловит это при правке уровня, чтобы не искать потом руками.
+   */
+  private warnAboutUnreachablePickups(): void {
+    if (!import.meta.env.DEV) return;
+    const limit = this.finaleTriggerX();
+    const lost = expandPickups(this.level.pickups).filter((item) => item.x > limit);
+    if (lost.length) {
+      console.warn(
+        `[${this.level.name}] ${lost.length} предмет(ов) лежит за точкой старта финала (x > ${Math.round(limit)}) — их не собрать:`,
+        lost.map((item) => `${item.type}@${Math.round(item.x)}`).join(', '),
+      );
+    }
+  }
+
+  /** Где включается финал: заранее, чтобы игрок дошёл до миски своими ногами */
+  private finaleTriggerX(): number {
+    return this.level.finish.x - 320;
   }
 
   private buildPickups(): void {
@@ -349,6 +371,7 @@ export class GameScene extends Phaser.Scene {
         score: earned,
         stars,
         palette: this.level.palette,
+        feminine: this.level.catFeminine ?? false,
       });
     });
   }
@@ -379,8 +402,7 @@ export class GameScene extends Phaser.Scene {
     if (this.player.body.blocked.down) this.lastSafeX = this.player.x;
     if (this.player.y > this.level.height + 160) this.respawn();
 
-    // запускаем пораньше, чтобы игрок успел дойти до миски своими ногами
-    if (!this.finished && this.player.x > this.level.finish.x - 320) {
+    if (!this.finished && this.player.x > this.finaleTriggerX()) {
       void this.startFinale();
     }
 

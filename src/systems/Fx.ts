@@ -4,6 +4,9 @@ import Phaser from 'phaser';
 import type { Palette } from '../config/palettes';
 import { MAX_VIEW_W, SVG_SCALE, VIEW_H, mix } from './Textures';
 
+/** Ускорение сыплющегося корма — по нему же считается время падения в миску */
+export const POUR_GRAVITY = 1400;
+
 export class Fx {
   private readonly scene: Phaser.Scene;
   private readonly palette: Palette;
@@ -83,19 +86,24 @@ export class Fx {
     this.scene.time.delayedCall(1100, () => emitter.destroy());
   }
 
-  /** Корм сыплется в миску */
-  pourFood(x: number, y: number, durationMs: number): Phaser.GameObjects.Particles.ParticleEmitter {
+  /**
+   * Корм сыплется в миску.
+   * lifespanMs подбирается под высоту падения, чтобы крокеты гасли ровно на кромке,
+   * а не пролетали сквозь миску в пол; depth кладём под миску, и они исчезают за ней.
+   */
+  pourFood(x: number, y: number, durationMs: number, lifespanMs: number,
+           depth: number): Phaser.GameObjects.Particles.ParticleEmitter {
     const emitter = this.scene.add.particles(x, y, 'kibble', {
-      speed: { min: 20, max: 90 },
-      angle: { min: 250, max: 290 },
-      lifespan: 900,
-      scale: { start: 1.1, end: 0.9 },
-      gravityY: 1400,
+      speed: { min: 10, max: 70 },
+      angle: { min: 72, max: 108 },
+      lifespan: lifespanMs,
+      scale: { start: 1.1, end: 1 },
+      gravityY: POUR_GRAVITY,
       rotate: { min: -180, max: 180 },
       frequency: 18,
       quantity: 2,
     });
-    emitter.setDepth(12);
+    emitter.setDepth(depth);
     this.scene.time.delayedCall(durationMs, () => {
       emitter.stop();
       this.scene.time.delayedCall(1000, () => emitter.destroy());

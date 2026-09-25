@@ -22,6 +22,8 @@ interface ResultData {
   score: number;
   stars: number;
   palette: string;
+  /** кошка или кот — от этого зависит окончание в «накормлен(а)» */
+  feminine?: boolean;
 }
 
 export class ResultScene extends Phaser.Scene {
@@ -54,7 +56,7 @@ export class ResultScene extends Phaser.Scene {
       fontFamily: FONT, fontSize: '38px', color: '#ffffff',
     }).setOrigin(0.5);
 
-    this.add.text(this.scale.width / 2, 232, `${this.result.catName} накормлен${this.result.catName === 'Тиша' ? 'а' : ''}`, {
+    this.add.text(this.scale.width / 2, 232, `${this.result.catName} накормлен${this.result.feminine ? 'а' : ''}`, {
       fontFamily: FONT, fontSize: '22px', color: '#e6dcc9',
     }).setOrigin(0.5).setAlpha(0.8);
 
