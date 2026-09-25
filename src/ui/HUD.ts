@@ -3,7 +3,7 @@
 import Phaser from 'phaser';
 import type { Palette } from '../config/palettes';
 import type { LevelDef } from '../levels/types';
-import { SVG_SCALE, VIEW_W } from '../systems/Textures';
+import { SVG_SCALE } from '../systems/Textures';
 
 const FONT = '"Baloo 2", Nunito, sans-serif';
 
@@ -20,6 +20,10 @@ export class HUD {
   private readonly barFill: Phaser.GameObjects.Rectangle;
   private readonly starIcons: Phaser.GameObjects.Image[] = [];
   private readonly soundButton: Phaser.GameObjects.Text;
+  private readonly pauseButton: Phaser.GameObjects.Text;
+  private readonly rightPanel: Phaser.GameObjects.Graphics;
+  private readonly titlePanel: Phaser.GameObjects.Graphics;
+  private readonly title: Phaser.GameObjects.Text;
 
   onMute?: () => boolean;
   onPause?: () => void;
@@ -32,8 +36,14 @@ export class HUD {
     const panel = scene.add.graphics().setScrollFactor(0).setDepth(100);
     panel.fillStyle(0x1b1430, 0.42);
     panel.fillRoundedRect(18, 16, 268, 76, 20);
-    panel.fillRoundedRect(VIEW_W - 150, 16, 132, 56, 18);
-    panel.fillRoundedRect(VIEW_W / 2 - 130, 16, 260, 44, 16);
+
+    // правая панель и заголовок рисуются от своей точки привязки — layout() их двигает
+    this.rightPanel = scene.add.graphics().setScrollFactor(0).setDepth(100);
+    this.rightPanel.fillStyle(0x1b1430, 0.42);
+    this.rightPanel.fillRoundedRect(-150, 16, 132, 56, 18);
+    this.titlePanel = scene.add.graphics().setScrollFactor(0).setDepth(100);
+    this.titlePanel.fillStyle(0x1b1430, 0.42);
+    this.titlePanel.fillRoundedRect(-130, 16, 260, 44, 16);
 
     this.icon = scene.add.image(56, 46, 'food-dry')
       .setScrollFactor(0).setDepth(101).setScale(ICON_SCALE);
@@ -42,7 +52,7 @@ export class HUD {
       fontFamily: FONT, fontSize: '34px', color: '#ffffff',
     }).setScrollFactor(0).setDepth(101);
 
-    scene.add.text(VIEW_W / 2, 38, `${level.name} · ${level.catName}`, {
+    this.title = scene.add.text(0, 38, `${level.name} · ${level.catName}`, {
       fontFamily: FONT, fontSize: '22px', color: '#ffffff',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101).setAlpha(0.9);
 
@@ -58,11 +68,22 @@ export class HUD {
       this.starIcons.push(star);
     }
 
-    this.soundButton = this.button(VIEW_W - 118, 44, muted ? '🔇' : '🔊', () => {
+    this.soundButton = this.button(0, 44, muted ? '🔇' : '🔊', () => {
       const nowMuted = this.onMute?.() ?? false;
       this.soundButton.setText(nowMuted ? '🔇' : '🔊');
     });
-    this.button(VIEW_W - 52, 44, '⏸', () => this.onPause?.());
+    this.pauseButton = this.button(0, 44, '⏸', () => this.onPause?.());
+
+    this.layout(scene.scale.width);
+  }
+
+  /** Раскладывает то, что привязано к правому краю и к центру экрана */
+  layout(width: number): void {
+    this.rightPanel.x = width;
+    this.soundButton.x = width - 118;
+    this.pauseButton.x = width - 52;
+    this.titlePanel.x = width / 2;
+    this.title.x = width / 2;
   }
 
   private button(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Text {

@@ -2,7 +2,7 @@
 
 import Phaser from 'phaser';
 import type { Palette } from '../config/palettes';
-import { SVG_SCALE, VIEW_H, VIEW_W, mix } from './Textures';
+import { MAX_VIEW_W, SVG_SCALE, VIEW_H, mix } from './Textures';
 
 export class Fx {
   private readonly scene: Phaser.Scene;
@@ -146,7 +146,7 @@ export class Fx {
     const kind = this.palette.ambient;
     const peak = kind === 'fireflies' ? 0.9 : 0.35;
     const emitter = this.scene.add.particles(0, 0, 'soft-dot', {
-      x: { min: 0, max: VIEW_W },
+      x: { min: 0, max: MAX_VIEW_W },
       y: { min: 40, max: VIEW_H - 60 },
       speedX: kind === 'feathers' ? { min: -40, max: -8 } : { min: -14, max: 14 },
       speedY: kind === 'fireflies' ? { min: -16, max: 16 } : { min: 8, max: 30 },

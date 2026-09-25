@@ -5,7 +5,7 @@
 
 import Phaser from 'phaser';
 import type { Palette } from '../config/palettes';
-import { VIEW_H, VIEW_W } from '../systems/Textures';
+import { VIEW_H } from '../systems/Textures';
 
 export interface TouchState {
   left: boolean;
@@ -23,6 +23,9 @@ export class TouchControls {
   private stickKnob?: Phaser.GameObjects.Arc;
   private stickPointer: Phaser.Input.Pointer | null = null;
   private stickOrigin = new Phaser.Math.Vector2();
+  private stickZone?: Phaser.GameObjects.Zone;
+  /** кнопки справа: объекты и их отступ от правого края экрана */
+  private readonly rightAnchored: { objects: Phaser.GameObjects.Components.Transform[]; offset: number }[] = [];
 
   private axis = 0;
   private jumpHeld = false;
@@ -44,8 +47,9 @@ export class TouchControls {
       .setScrollFactor(0).setDepth(121);
     this.stickOrigin.set(180, baseY);
 
-    const zone = scene.add.zone(0, VIEW_H / 2, VIEW_W / 2, VIEW_H / 2)
+    const zone = scene.add.zone(0, VIEW_H / 2, scene.scale.width / 2, VIEW_H / 2)
       .setOrigin(0, 0).setScrollFactor(0).setInteractive();
+    this.stickZone = zone;
     zone.on('pointerdown', (p: Phaser.Input.Pointer) => {
       this.stickPointer = p;
       this.stickOrigin.set(p.x, p.y);
@@ -63,24 +67,37 @@ export class TouchControls {
       }
     });
 
-    this.actionButton(VIEW_W - 150, baseY, 62, '▲', palette.accent, () => {
+    this.actionButton(150, baseY, 62, '▲', palette.accent, () => {
       this.jumpQueued = true;
       this.jumpHeld = true;
     }, () => { this.jumpHeld = false; });
 
-    this.actionButton(VIEW_W - 290, baseY + 40, 46, '»', 0x9ad9ff, () => {
+    this.actionButton(290, baseY + 40, 46, '»', 0x9ad9ff, () => {
       this.dashQueued = true;
     });
+
+    this.layout(scene.scale.width);
   }
 
-  private actionButton(x: number, y: number, r: number, label: string, color: number,
+  /** Двигает кнопки к правому краю и растягивает зону джойстика на левую половину */
+  layout(width: number): void {
+    if (!this.enabled) return;
+    for (const { objects, offset } of this.rightAnchored) {
+      for (const obj of objects) obj.x = width - offset;
+    }
+    this.stickZone!.setSize(width / 2, VIEW_H / 2);
+  }
+
+  /** offset — расстояние от центра кнопки до правого края экрана */
+  private actionButton(offset: number, y: number, r: number, label: string, color: number,
                        onDown: () => void, onUp?: () => void): void {
-    const circle = this.scene.add.circle(x, y, r, color, 0.28)
+    const circle = this.scene.add.circle(0, y, r, color, 0.28)
       .setScrollFactor(0).setDepth(120).setStrokeStyle(3, color, 0.6)
       .setInteractive({ useHandCursor: true });
-    this.scene.add.text(x, y, label, {
+    const text = this.scene.add.text(0, y, label, {
       fontFamily: '"Baloo 2", Nunito, sans-serif', fontSize: `${r}px`, color: '#ffffff',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(121).setAlpha(0.85);
+    this.rightAnchored.push({ objects: [circle, text], offset });
 
     circle.on('pointerdown', () => { circle.setFillStyle(color, 0.5); onDown(); });
     circle.on('pointerup', () => { circle.setFillStyle(color, 0.28); onUp?.(); });

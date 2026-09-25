@@ -7,12 +7,20 @@ import { MenuScene } from './scenes/MenuScene';
 import { PauseScene } from './scenes/PauseScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { ResultScene } from './scenes/ResultScene';
-import { VIEW_H, VIEW_W } from './systems/Textures';
+import { MAX_VIEW_W, VIEW_H, VIEW_W } from './systems/Textures';
+
+const parent = document.getElementById('game')!;
+
+/** Ширина игры под пропорции экрана: высота всегда VIEW_H, по бокам не остаётся полос */
+function fitWidth(): number {
+  const aspect = parent.clientWidth / Math.max(1, parent.clientHeight);
+  return Phaser.Math.Clamp(Math.round(VIEW_H * aspect), VIEW_W, MAX_VIEW_W);
+}
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
-  parent: 'game',
-  width: VIEW_W,
+  parent,
+  width: fitWidth(),
   height: VIEW_H,
   backgroundColor: '#1b1a26',
   scale: {
@@ -27,6 +35,16 @@ const game = new Phaser.Game({
     arcade: { gravity: { x: 0, y: 0 }, debug: false },
   },
   scene: [BootScene, PreloadScene, MenuScene, GameScene, PauseScene, ResultScene],
+});
+
+// поворот телефона, панели браузера появились или спрятались
+let resizeTimer = 0;
+window.addEventListener('resize', () => {
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    const width = fitWidth();
+    if (width !== game.scale.width) game.scale.setGameSize(width, VIEW_H);
+  }, 100);
 });
 
 // удобно лезть в сцены из консоли браузера
