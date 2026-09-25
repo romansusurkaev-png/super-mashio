@@ -111,9 +111,10 @@ function paintSky(scene: Phaser.Scene, key: string, p: Palette): void {
   });
 }
 
-/** Дальний слой: силуэты домов и крон деревьев */
+/** Дальний слой: во дворе дома и деревья, на кухне полки с банками */
 function paintFar(scene: Phaser.Scene, key: string, p: Palette): void {
   paint(scene, key, VIEW_W, 340, (ctx, w, h) => {
+    if (p.theme === 'kitchen') { farKitchen(ctx, w, h, p); return; }
     ctx.fillStyle = hex(p.far);
     let x = 40;
     let seed = 7;
@@ -158,9 +159,10 @@ function paintFar(scene: Phaser.Scene, key: string, p: Palette): void {
   });
 }
 
-/** Средний слой: гаражи и сараи */
+/** Средний слой: гаражи или навесные шкафы */
 function paintMid(scene: Phaser.Scene, key: string, p: Palette): void {
   paint(scene, key, VIEW_W, 300, (ctx, w, h) => {
+    if (p.theme === 'kitchen') { midKitchen(ctx, w, h, p); return; }
     let x = 20;
     let seed = 31;
     const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
@@ -192,9 +194,10 @@ function paintMid(scene: Phaser.Scene, key: string, p: Palette): void {
   });
 }
 
-/** Ближний слой: забор со штакетником и кусты */
+/** Ближний слой: забор с кустами или столешница с банками */
 function paintNear(scene: Phaser.Scene, key: string, p: Palette): void {
   paint(scene, key, VIEW_W, 240, (ctx, w, h) => {
+    if (p.theme === 'kitchen') { nearKitchen(ctx, w, h, p); return; }
     ctx.fillStyle = hex(p.near);
     // штакетник
     for (let x = 0; x < w; x += 34) {
@@ -241,6 +244,7 @@ export function makeVignette(scene: Phaser.Scene): void {
 // ---------------------------------------------------------------- декор
 
 export function makeDecorTextures(scene: Phaser.Scene, p: Palette, prefix: string): void {
+  if (p.theme === 'kitchen') { decorKitchen(scene, p, prefix); return; }
   const dark = hex(mix(p.ground, 0x1a1226, 0.55));
 
   paint(scene, `${prefix}-bush`, 190, 130, (ctx, w, h) => {
@@ -360,6 +364,195 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+
+
+// ---------------------------------------------------------------- кухня
+
+/** Дальний слой: две полки вдоль стены, на них банки */
+function farKitchen(ctx: CanvasRenderingContext2D, w: number, h: number, p: Palette): void {
+  let seed = 11;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const board = hex(mix(p.far, 0x000000, 0.28));
+
+  for (const shelfY of [h - 250, h - 120]) {
+    for (let x = 26; x < w - 70; x += 46 + rnd() * 40) {
+      const jw = 22 + rnd() * 22;
+      const jh = 38 + rnd() * 54;
+      ctx.fillStyle = hex(mix(p.far, p.glow, 0.18 + rnd() * 0.32));
+      roundRect(ctx, x, shelfY - jh, jw, jh, 6);
+      ctx.fill();
+      ctx.fillStyle = board;
+      ctx.fillRect(x + 2, shelfY - jh - 7, jw - 4, 8);
+    }
+    ctx.fillStyle = board;
+    ctx.fillRect(0, shelfY, w, 14);
+    ctx.fillStyle = hex(mix(p.far, 0x000000, 0.45));
+    ctx.fillRect(0, shelfY + 14, w, 5);
+  }
+}
+
+/** Средний слой: ряд навесных шкафов. Ширина делится нацело, поэтому шва не видно */
+function midKitchen(ctx: CanvasRenderingContext2D, w: number, h: number, p: Palette): void {
+  const count = 8;
+  const unit = w / count;
+  const top = h - 210;
+
+  ctx.fillStyle = hex(p.mid);
+  ctx.fillRect(0, top, w, 200);
+  ctx.fillStyle = hex(mix(p.mid, 0x000000, 0.38));
+  ctx.fillRect(0, top + 200, w, 12);
+
+  for (let i = 0; i < count; i++) {
+    const x = i * unit;
+    ctx.fillStyle = hex(mix(p.mid, p.glow, 0.14));
+    roundRect(ctx, x + 10, top + 14, unit - 20, 172, 10);
+    ctx.fill();
+    ctx.fillStyle = hex(mix(p.mid, 0x000000, 0.26));
+    roundRect(ctx, x + 26, top + 30, unit - 52, 140, 8);
+    ctx.fill();
+    ctx.fillStyle = hex(mix(p.mid, 0xffffff, 0.5));
+    roundRect(ctx, x + unit / 2 - 5, top + 146, 10, 28, 5);
+    ctx.fill();
+  }
+}
+
+/** Ближний слой: столешница, на ней банки, бутылки и доска */
+function nearKitchen(ctx: CanvasRenderingContext2D, w: number, h: number, p: Palette): void {
+  let seed = 3;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const slabTop = h - 74;
+
+  for (let x = 30; x < w - 110; x += 118 + rnd() * 96) {
+    const kind = Math.floor(rnd() * 3);
+    ctx.fillStyle = hex(mix(p.near, p.glow, 0.3 + rnd() * 0.28));
+    if (kind === 0) {
+      const jh = 64 + rnd() * 44;
+      roundRect(ctx, x, slabTop - jh, 46, jh, 10);
+      ctx.fill();
+      ctx.fillStyle = hex(mix(p.near, 0x000000, 0.35));
+      ctx.fillRect(x + 4, slabTop - jh - 10, 38, 11);
+    } else if (kind === 1) {
+      const bh = 104 + rnd() * 44;
+      roundRect(ctx, x + 6, slabTop - bh * 0.55, 34, bh * 0.55, 9);
+      ctx.fill();
+      ctx.fillRect(x + 16, slabTop - bh, 14, bh * 0.5);
+      ctx.fillStyle = hex(mix(p.near, 0x000000, 0.35));
+      ctx.fillRect(x + 14, slabTop - bh - 6, 18, 8);
+    } else {
+      roundRect(ctx, x, slabTop - 92, 52, 92, 16);
+      ctx.fill();
+    }
+  }
+
+  ctx.fillStyle = hex(mix(p.near, p.groundTop, 0.4));
+  ctx.fillRect(0, slabTop, w, 26);
+  ctx.fillStyle = hex(p.near);
+  ctx.fillRect(0, slabTop + 26, w, h - slabTop - 26);
+}
+
+/** Декор кухни: банка, бутылка, кружка, растение, лампа, хлебница */
+function decorKitchen(scene: Phaser.Scene, p: Palette, prefix: string): void {
+  const dark = hex(mix(p.ground, 0x2a1a12, 0.55));
+  const light = hex(mix(p.groundTop, 0xffffff, 0.35));
+
+  paint(scene, prefix + '-jar', 110, 150, (ctx, w, h) => {
+    ctx.fillStyle = dark;
+    roundRect(ctx, 16, 30, w - 32, h - 34, 20); ctx.fill();
+    ctx.fillStyle = hex(mix(p.groundTop, p.glow, 0.45));
+    roundRect(ctx, 22, 36, w - 44, h - 46, 16); ctx.fill();
+    ctx.fillStyle = hex(mix(p.accent, 0xffffff, 0.25));
+    roundRect(ctx, 30, 74, w - 60, h - 88, 10); ctx.fill();
+    ctx.fillStyle = dark;
+    roundRect(ctx, 10, 8, w - 20, 30, 10); ctx.fill();
+    ctx.fillStyle = light;
+    roundRect(ctx, 34, 52, 12, 46, 6); ctx.fill();
+  });
+
+  paint(scene, prefix + '-bottle', 90, 210, (ctx, w, h) => {
+    ctx.fillStyle = dark;
+    roundRect(ctx, 14, 78, w - 28, h - 82, 20); ctx.fill();
+    ctx.fillRect(w / 2 - 17, 22, 34, 66);
+    roundRect(ctx, w / 2 - 21, 6, 42, 24, 8); ctx.fill();
+    ctx.fillStyle = hex(mix(p.near, p.glow, 0.5));
+    roundRect(ctx, 20, 84, w - 40, h - 94, 16); ctx.fill();
+    ctx.fillRect(w / 2 - 12, 30, 24, 58);
+    ctx.fillStyle = light;
+    roundRect(ctx, 28, 100, 10, 60, 5); ctx.fill();
+  });
+
+  paint(scene, prefix + '-cup', 120, 100, (ctx, w, h) => {
+    ctx.strokeStyle = dark;
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.arc(w - 32, h / 2 + 4, 24, -Math.PI / 2, Math.PI / 2);
+    ctx.stroke();
+    ctx.fillStyle = dark;
+    roundRect(ctx, 12, 20, w - 54, h - 26, 14); ctx.fill();
+    ctx.fillStyle = hex(mix(p.accent, 0xffffff, 0.4));
+    roundRect(ctx, 20, 28, w - 70, h - 42, 10); ctx.fill();
+  });
+
+  paint(scene, prefix + '-plant', 160, 200, (ctx, w, h) => {
+    ctx.strokeStyle = hex(mix(0x4e9a5b, 0x000000, 0.2));
+    ctx.lineWidth = 9;
+    ctx.lineCap = 'round';
+    const leaves: Array<[number, number]> = [[-42, -70], [0, -96], [44, -66]];
+    for (const [dx, dy] of leaves) {
+      ctx.beginPath();
+      ctx.moveTo(w / 2, h - 70);
+      ctx.quadraticCurveTo(w / 2 + dx * 0.4, h - 70 + dy * 0.7, w / 2 + dx, h - 70 + dy);
+      ctx.stroke();
+      ctx.fillStyle = hex(0x5fae66);
+      ctx.beginPath();
+      ctx.ellipse(w / 2 + dx, h - 70 + dy, 26, 17, dx / 90, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.moveTo(w / 2 - 46, h - 74); ctx.lineTo(w / 2 + 46, h - 74);
+    ctx.lineTo(w / 2 + 34, h - 4); ctx.lineTo(w / 2 - 34, h - 4);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = hex(mix(p.accent, 0x000000, 0.1));
+    ctx.fillRect(w / 2 - 42, h - 70, 84, 16);
+  });
+
+  paint(scene, prefix + '-lamp', 150, 230, (ctx, w, h) => {
+    ctx.fillStyle = dark;
+    ctx.fillRect(w / 2 - 7, 92, 14, h - 110);
+    roundRect(ctx, w / 2 - 36, h - 22, 72, 18, 8); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(w / 2 - 54, 92); ctx.lineTo(w / 2 + 54, 92);
+    ctx.lineTo(w / 2 + 30, 26); ctx.lineTo(w / 2 - 30, 26);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = hex(mix(p.accent, 0xffffff, 0.3));
+    ctx.beginPath();
+    ctx.moveTo(w / 2 - 46, 86); ctx.lineTo(w / 2 + 46, 86);
+    ctx.lineTo(w / 2 + 25, 33); ctx.lineTo(w / 2 - 25, 33);
+    ctx.closePath(); ctx.fill();
+    const glow = ctx.createRadialGradient(w / 2, 96, 4, w / 2, 96, 78);
+    glow.addColorStop(0, hex(p.glow) + 'dd');
+    glow.addColorStop(1, hex(p.glow) + '00');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 30, w, 150);
+  });
+
+  paint(scene, prefix + '-box', 170, 120, (ctx, w, h) => {
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.moveTo(6, h - 4); ctx.lineTo(6, 54);
+    ctx.quadraticCurveTo(w / 2, -12, w - 6, 54);
+    ctx.lineTo(w - 6, h - 4);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = hex(mix(p.groundTop, p.glow, 0.3));
+    ctx.beginPath();
+    ctx.moveTo(16, h - 12); ctx.lineTo(16, 58);
+    ctx.quadraticCurveTo(w / 2, 2, w - 16, 58);
+    ctx.lineTo(w - 16, h - 12);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dark;
+    roundRect(ctx, w / 2 - 22, h - 46, 44, 10, 5); ctx.fill();
+  });
 }
 
 /** Всё, что нужно уровню: небо, три слоя, декор */

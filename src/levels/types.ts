@@ -45,16 +45,23 @@ export interface HazardDef {
 }
 
 export interface DecorDef {
-  kind: 'bush' | 'tree' | 'fence' | 'lamp' | 'box' | 'flowers';
+  /** имя картинки декора; набор зависит от темы уровня (см. Textures.ts) */
+  kind: string;
   x: number;
   y: number;
   scale?: number;
+  /** покачивается, будто от ветра или сквозняка */
+  sway?: boolean;
+  /** рисуется позади игрока — деревья, лампы, крупные предметы */
+  back?: boolean;
 }
 
 export interface LevelDef {
   id: number;
   name: string;
   catName: string;
+  /** true — кошка, false/нет — кот. Нужно только для текста на экране результата */
+  catFeminine?: boolean;
   palette: string;
   width: number;
   height: number;
