@@ -12,7 +12,7 @@ import { Finale } from '../systems/Finale';
 import { Fx } from '../systems/Fx';
 import { Parallax } from '../systems/Parallax';
 import { Save } from '../systems/Save';
-import { SVG_SCALE, mix } from '../systems/Textures';
+import { SVG_SCALE, VIEW_H, mix, onWidthChange } from '../systems/Textures';
 import { HUD } from '../ui/HUD';
 import { TouchControls } from '../ui/TouchControls';
 import { LEVELS } from '../levels';
@@ -99,10 +99,12 @@ export class GameScene extends Phaser.Scene {
     cam.startFollow(this.player.hitbox, true, 0.1, 0.12);
     cam.setDeadzone(200, 160);
     cam.setFollowOffset(0, -40);
+    let vignette: Phaser.GameObjects.Image | undefined;
     if (this.game.renderer.type === Phaser.WEBGL) {
       cam.postFX.addVignette(0.5, 0.5, 0.78, 0.4);
     } else {
-      this.add.image(0, 0, 'vignette').setOrigin(0).setScrollFactor(0).setDepth(90).setAlpha(0.8);
+      vignette = this.add.image(0, 0, 'vignette').setOrigin(0).setScrollFactor(0).setDepth(90).setAlpha(0.8)
+        .setDisplaySize(this.scale.width, VIEW_H);
     }
     cam.fadeIn(500, 0, 0, 0);
 
@@ -121,6 +123,14 @@ export class GameScene extends Phaser.Scene {
     };
     this.hud.onPause = () => this.togglePause();
     this.hud.setScore(0);
+
+    // телефон повернули или браузер спрятал панели — прижимаем интерфейс к новым краям
+    onWidthChange(this, (width) => {
+      this.hud.layout(width);
+      this.touch.layout(width);
+      this.parallax.layout(width);
+      vignette?.setDisplaySize(width, VIEW_H);
+    });
 
     // звук можно включать только после первого действия пользователя
     const unlock = () => {

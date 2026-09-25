@@ -10,8 +10,23 @@ import type { Palette } from '../config/palettes';
 /** SVG грузятся в двойном размере ради чёткости — рисуем их вполовину */
 export const SVG_SCALE = 0.5;
 
+/** Высота игры всегда VIEW_H, а ширина подстраивается под экран: от VIEW_W (16:9)
+ *  до MAX_VIEW_W (≈ 2.6:1, телефон боком). Текущая ширина — scene.scale.width. */
 export const VIEW_W = 1280;
 export const VIEW_H = 720;
+export const MAX_VIEW_W = 1880;
+
+/** Зовёт fn, когда меняется ширина игры (поворот телефона, панели браузера) */
+export function onWidthChange(scene: Phaser.Scene, fn: (width: number) => void): void {
+  let last = scene.scale.width;
+  const handler = (gameSize: Phaser.Structs.Size) => {
+    if (gameSize.width === last) return;
+    last = gameSize.width;
+    fn(last);
+  };
+  scene.scale.on(Phaser.Scale.Events.RESIZE, handler);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.scale.off(Phaser.Scale.Events.RESIZE, handler));
+}
 
 /** 0x336699 -> '#336699' */
 export function hex(color: number): string {
@@ -214,7 +229,7 @@ function paintNear(scene: Phaser.Scene, key: string, p: Palette): void {
 
 /** Виньетка поверх сцены — на случай, если PostFX недоступен */
 export function makeVignette(scene: Phaser.Scene): void {
-  paint(scene, 'vignette', VIEW_W, VIEW_H, (ctx, w, h) => {
+  paint(scene, 'vignette', MAX_VIEW_W, VIEW_H, (ctx, w, h) => {
     const g = ctx.createRadialGradient(w / 2, h / 2, h * 0.35, w / 2, h / 2, h * 0.92);
     g.addColorStop(0, 'rgba(0,0,0,0)');
     g.addColorStop(1, 'rgba(0,0,0,0.55)');

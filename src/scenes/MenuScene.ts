@@ -6,7 +6,7 @@ import { LEVELS, LEVEL_CARDS } from '../levels';
 import { audio } from '../systems/AudioManager';
 import { Fx } from '../systems/Fx';
 import { Save } from '../systems/Save';
-import { VIEW_H, VIEW_W } from '../systems/Textures';
+import { VIEW_H, onWidthChange } from '../systems/Textures';
 
 const FONT = '"Baloo 2", Nunito, sans-serif';
 
@@ -16,16 +16,19 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    // разметка считается от ширины экрана — при её смене проще собрать сцену заново
+    onWidthChange(this, () => this.scene.restart());
+
     const palette = getPalette('yard');
 
-    this.add.image(0, 0, 'yard-sky').setOrigin(0).setDisplaySize(VIEW_W, VIEW_H);
-    this.add.tileSprite(0, VIEW_H - 440, VIEW_W, 340, 'yard-far')
+    this.add.image(0, 0, 'yard-sky').setOrigin(0).setDisplaySize(this.scale.width, VIEW_H);
+    this.add.tileSprite(0, VIEW_H - 440, this.scale.width, 340, 'yard-far')
       .setOrigin(0).setAlpha(0.7);
-    this.add.tileSprite(0, VIEW_H - 240, VIEW_W, 240, 'yard-near').setOrigin(0);
+    this.add.tileSprite(0, VIEW_H - 240, this.scale.width, 240, 'yard-near').setOrigin(0);
 
     new Fx(this, palette).ambient();
 
-    const title = this.add.text(VIEW_W / 2, 150, 'SUPER MASHIO', {
+    const title = this.add.text(this.scale.width / 2, 150, 'SUPER MASHIO', {
       fontFamily: FONT, fontSize: '78px', color: '#ffd166',
     }).setOrigin(0.5);
     title.setShadow(0, 6, '#2a1b3d', 12, true, true);
@@ -39,16 +42,16 @@ export class MenuScene extends Phaser.Scene {
       ease: 'Sine.easeInOut',
     });
 
-    this.add.text(VIEW_W / 2, 214, 'собери корм и накорми кошку', {
+    this.add.text(this.scale.width / 2, 214, 'собери корм и накорми кошку', {
       fontFamily: FONT, fontSize: '24px', color: '#f6ead8',
     }).setOrigin(0.5).setAlpha(0.85);
 
     const save = Save.all();
     for (const [i, card] of LEVEL_CARDS.entries()) {
-      this.levelCard(VIEW_W / 2 + (i - 1) * 300, 420, card, save.unlocked >= card.id);
+      this.levelCard(this.scale.width / 2 + (i - 1) * 300, 420, card, save.unlocked >= card.id);
     }
 
-    this.add.text(VIEW_W / 2, VIEW_H - 46,
+    this.add.text(this.scale.width / 2, VIEW_H - 46,
       '←→ / A D — бег · Space — прыжок (двойной) · Shift — рывок', {
         fontFamily: FONT, fontSize: '19px', color: '#e6dcc9',
       }).setOrigin(0.5).setAlpha(0.7);

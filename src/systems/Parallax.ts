@@ -2,7 +2,7 @@
 
 import Phaser from 'phaser';
 import type { Palette } from '../config/palettes';
-import { VIEW_H, VIEW_W } from './Textures';
+import { MAX_VIEW_W, VIEW_H } from './Textures';
 
 interface Layer {
   sprite: Phaser.GameObjects.TileSprite;
@@ -11,17 +11,19 @@ interface Layer {
 
 export class Parallax {
   private readonly layers: Layer[] = [];
+  private readonly sky: Phaser.GameObjects.Image;
 
   constructor(scene: Phaser.Scene, palette: Palette, prefix: string) {
-    scene.add.image(0, 0, `${prefix}-sky`)
+    // небо тянем точно по ширине экрана (в нём зарево), а слои с запасом — их просто видно больше
+    this.sky = scene.add.image(0, 0, `${prefix}-sky`)
       .setOrigin(0, 0)
       .setScrollFactor(0)
       .setDepth(-100)
-      .setDisplaySize(VIEW_W, VIEW_H);
+      .setDisplaySize(scene.scale.width, VIEW_H);
 
     const add = (key: string, height: number, bottom: number, factor: number,
                  depth: number, alpha: number, tint?: number) => {
-      const sprite = scene.add.tileSprite(0, bottom - height, VIEW_W, height, key)
+      const sprite = scene.add.tileSprite(0, bottom - height, MAX_VIEW_W, height, key)
         .setOrigin(0, 0)
         .setScrollFactor(0)
         .setDepth(depth)
@@ -35,6 +37,10 @@ export class Parallax {
     add(`${prefix}-near`, 240, VIEW_H - 40, 0.58, -70, 1);
 
     void palette;
+  }
+
+  layout(width: number): void {
+    this.sky.setDisplaySize(width, VIEW_H);
   }
 
   update(scrollX: number): void {

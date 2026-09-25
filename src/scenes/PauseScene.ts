@@ -2,7 +2,7 @@
 
 import Phaser from 'phaser';
 import { audio } from '../systems/AudioManager';
-import { VIEW_H, VIEW_W } from '../systems/Textures';
+import { VIEW_H, onWidthChange } from '../systems/Textures';
 import type { GameScene } from './GameScene';
 
 const FONT = '"Baloo 2", Nunito, sans-serif';
@@ -13,18 +13,21 @@ export class PauseScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x120c1e, 0.6).setOrigin(0);
-    this.add.text(VIEW_W / 2, VIEW_H / 2 - 80, 'Пауза', {
+    // разметка считается от ширины экрана — при её смене проще собрать сцену заново
+    onWidthChange(this, () => this.scene.restart());
+
+    this.add.rectangle(0, 0, this.scale.width, VIEW_H, 0x120c1e, 0.6).setOrigin(0);
+    this.add.text(this.scale.width / 2, VIEW_H / 2 - 80, 'Пауза', {
       fontFamily: FONT, fontSize: '54px', color: '#ffd166',
     }).setOrigin(0.5);
 
-    this.button(VIEW_W / 2, VIEW_H / 2 + 10, 'Продолжить', () => {
+    this.button(this.scale.width / 2, VIEW_H / 2 + 10, 'Продолжить', () => {
       const game = this.scene.get('game') as GameScene;
       game.resume();
       this.scene.stop();
     });
 
-    this.button(VIEW_W / 2, VIEW_H / 2 + 90, 'В меню', () => {
+    this.button(this.scale.width / 2, VIEW_H / 2 + 90, 'В меню', () => {
       audio.stopMusic();
       this.scene.stop('game');
       this.scene.stop();

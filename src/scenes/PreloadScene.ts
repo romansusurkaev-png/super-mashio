@@ -6,7 +6,7 @@
 import Phaser from 'phaser';
 import { getPalette } from '../config/palettes';
 import { PLAYER_TEXTURE } from '../entities/PlayerAnimations';
-import { VIEW_H, VIEW_W, buildLevelTextures, makeParticleTextures, makeVignette } from '../systems/Textures';
+import { VIEW_H, buildLevelTextures, makeParticleTextures, makeVignette } from '../systems/Textures';
 
 /** Натуральные размеры SVG из public/assets/svg */
 const SVG: Record<string, [number, number]> = {
@@ -55,9 +55,9 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private showProgress(): void {
-    const bg = this.add.rectangle(VIEW_W / 2, VIEW_H / 2, 420, 10, 0xffffff, 0.15);
-    const bar = this.add.rectangle(VIEW_W / 2 - 210, VIEW_H / 2, 0, 10, 0xffd166).setOrigin(0, 0.5);
-    this.add.text(VIEW_W / 2, VIEW_H / 2 - 44, 'SUPER MASHIO', {
+    const bg = this.add.rectangle(this.scale.width / 2, VIEW_H / 2, 420, 10, 0xffffff, 0.15);
+    const bar = this.add.rectangle(this.scale.width / 2 - 210, VIEW_H / 2, 0, 10, 0xffd166).setOrigin(0, 0.5);
+    this.add.text(this.scale.width / 2, VIEW_H / 2 - 44, 'SUPER MASHIO', {
       fontFamily: '"Baloo 2", Nunito, sans-serif', fontSize: '40px', color: '#ffd166',
     }).setOrigin(0.5);
 

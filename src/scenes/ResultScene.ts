@@ -4,7 +4,7 @@ import Phaser from 'phaser';
 import { getPalette } from '../config/palettes';
 import { LEVELS } from '../levels';
 import { audio } from '../systems/AudioManager';
-import { VIEW_H, VIEW_W } from '../systems/Textures';
+import { VIEW_H, onWidthChange } from '../systems/Textures';
 
 const FONT = '"Baloo 2", Nunito, sans-serif';
 
@@ -36,29 +36,32 @@ export class ResultScene extends Phaser.Scene {
   }
 
   create(): void {
+    // разметка считается от ширины экрана — при её смене проще собрать сцену заново
+    onWidthChange(this, () => this.scene.restart());
+
     const palette = getPalette(this.result.palette);
 
-    this.add.image(0, 0, `${this.result.palette}-sky`).setOrigin(0).setDisplaySize(VIEW_W, VIEW_H);
-    this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x120c1e, 0.62).setOrigin(0);
+    this.add.image(0, 0, `${this.result.palette}-sky`).setOrigin(0).setDisplaySize(this.scale.width, VIEW_H);
+    this.add.rectangle(0, 0, this.scale.width, VIEW_H, 0x120c1e, 0.62).setOrigin(0);
 
     const panel = this.add.graphics();
     panel.fillStyle(0x1b1430, 0.85);
-    panel.fillRoundedRect(VIEW_W / 2 - 300, 130, 600, 440, 30);
+    panel.fillRoundedRect(this.scale.width / 2 - 300, 130, 600, 440, 30);
     panel.lineStyle(3, palette.accent, 0.6);
-    panel.strokeRoundedRect(VIEW_W / 2 - 300, 130, 600, 440, 30);
+    panel.strokeRoundedRect(this.scale.width / 2 - 300, 130, 600, 440, 30);
 
-    this.add.text(VIEW_W / 2, 186, `${this.result.name} пройден`, {
+    this.add.text(this.scale.width / 2, 186, `${this.result.name} пройден`, {
       fontFamily: FONT, fontSize: '38px', color: '#ffffff',
     }).setOrigin(0.5);
 
-    this.add.text(VIEW_W / 2, 232, `${this.result.catName} накормлен${this.result.catName === 'Тиша' ? 'а' : ''}`, {
+    this.add.text(this.scale.width / 2, 232, `${this.result.catName} накормлен${this.result.catName === 'Тиша' ? 'а' : ''}`, {
       fontFamily: FONT, fontSize: '22px', color: '#e6dcc9',
     }).setOrigin(0.5).setAlpha(0.8);
 
     // --- звёзды появляются по одной
     const level = LEVELS[this.result.level];
     for (let i = 0; i < 3; i++) {
-      const star = this.add.image(VIEW_W / 2 + (i - 1) * 110, 330, 'spark')
+      const star = this.add.image(this.scale.width / 2 + (i - 1) * 110, 330, 'spark')
         .setScale(0)
         .setTint(i < this.result.stars ? palette.accent : 0xffffff)
         .setAlpha(i < this.result.stars ? 1 : 0.2);
@@ -75,27 +78,27 @@ export class ResultScene extends Phaser.Scene {
       });
 
       if (level) {
-        this.add.text(VIEW_W / 2 + (i - 1) * 110, 392, String(level.stars[i]), {
+        this.add.text(this.scale.width / 2 + (i - 1) * 110, 392, String(level.stars[i]), {
           fontFamily: FONT, fontSize: '17px', color: '#ffffff',
         }).setOrigin(0.5).setAlpha(0.4);
       }
     }
 
     this.time.delayedCall(1500, () => {
-      const verdict = this.add.text(VIEW_W / 2, 442, VERDICT[this.result.stars], {
+      const verdict = this.add.text(this.scale.width / 2, 442, VERDICT[this.result.stars], {
         fontFamily: FONT, fontSize: '30px', color: `#${palette.accent.toString(16).padStart(6, '0')}`,
       }).setOrigin(0.5).setAlpha(0);
       this.tweens.add({ targets: verdict, alpha: 1, y: 436, duration: 420 });
       audio.purr(4);
     });
 
-    this.add.text(VIEW_W / 2, 486, `собрано корма: ${this.result.score}`, {
+    this.add.text(this.scale.width / 2, 486, `собрано корма: ${this.result.score}`, {
       fontFamily: FONT, fontSize: '22px', color: '#ffffff',
     }).setOrigin(0.5).setAlpha(0.75);
 
-    this.button(VIEW_W / 2 - 110, 534, 'Ещё раз', palette.accent,
+    this.button(this.scale.width / 2 - 110, 534, 'Ещё раз', palette.accent,
       () => this.scene.start('game', { level: this.result.level }));
-    this.button(VIEW_W / 2 + 110, 534, 'В меню', 0xffffff,
+    this.button(this.scale.width / 2 + 110, 534, 'В меню', 0xffffff,
       () => this.scene.start('menu'));
 
     this.cameras.main.fadeIn(500, 0, 0, 0);
