@@ -84,8 +84,10 @@ export class Finale {
 
     // Горка корма растёт внутри миски, счётчик утекает в ноль.
     // Рисуем поверх миски и ровно по её внутреннему кругу, иначе корм висит в воздухе.
+    // Глубина строго между миской и кошкой: выше миски, иначе корма не видно,
+    // но ниже кошки, иначе горка ляжет поверх морды, когда та ест.
     this.pile = scene.add.ellipse(bowl.x, rimY - 4, foodW, foodW * 0.3, 0xc07c42)
-      .setDepth(bowl.depth + 1).setScale(0, 0);
+      .setDepth((bowl.depth + cat.root.depth) / 2).setScale(0, 0);
     scene.tweens.add({ targets: this.pile, scaleX: 1, scaleY: 1, duration: pourMs, ease: 'Sine.easeOut' });
     scene.tweens.addCounter({
       from: total,
@@ -97,8 +99,9 @@ export class Finale {
     scene.tweens.add({ targets: player, extraTilt: -4, duration: 400 });
 
     // --- кошка ест
-    // встаёт так, чтобы голова оказалась ровно над кормом, а не сбоку от миски
-    cat.runTo(bowl.x - 22, 220);
+    // встаёт сбоку от миски и тянется к ней мордой: если встать прямо над кормом,
+    // голова закроет его целиком
+    cat.runTo(bowl.x - 50, 220);
     await this.wait(700);
     cat.setFacing(1);
     cat.startEating();

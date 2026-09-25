@@ -182,7 +182,7 @@ export class Cat {
         const p = this.phase * 9;
         // ритмичное покачивание головой над миской
         this.headPivot.setAngle(24 + Math.sin(p) * 7);
-        this.headPivot.setPosition(L.headPivot.x + 6, L.headPivot.y + 26 + Math.sin(p) * 5);
+        this.headPivot.setPosition(L.headPivot.x + 14, L.headPivot.y + 26 + Math.sin(p) * 5);
         this.body.setAngle(4);
         this.waveTail(this.phase * 4.5, 22);
         break;
